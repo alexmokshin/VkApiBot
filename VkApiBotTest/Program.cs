@@ -73,8 +73,8 @@ namespace VkApiBotTest
             api.Authorize(new ApiAuthParams
             {
                 ApplicationId = 6810122,
-                Login = "+79827160928",
-                Password = "Zgd5897jygg%",
+                Login = "***",
+                Password = "***",
                 Settings = Settings.Wall,
                 TwoFactorAuthorization = () =>
                 {
