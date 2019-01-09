@@ -55,6 +55,7 @@ namespace VkApiBotTest
             }
             foreach (var t in massSymbPairs)
                 Console.WriteLine("Символ {0} частность {1}", t.Key, t.Value);
+            //TODO: Реализовать класс, который будет обрабатывать статистику из постов, возвращать JSON. Постараться абстрагироваться от листа с текстом. Пусть принимает весь класс POST и его обрабатывает. В частности, выдергивает текст, и считает статистику
             string json = JsonConvert.SerializeObject(massSymbPairs);
             Console.WriteLine(json);
             //GetPostsFromVkViaApi();
@@ -89,10 +90,12 @@ namespace VkApiBotTest
                 Domain = "id1",
                 Count = 5
             });
+            // TODO: Вынести параметры запрашиваемого поста в отдельный класс. Реализовать в классе проверку на ввод домена.
 
             List<VkNet.Model.Attachments.Post> listPosts = get.WallPosts.Where(item => item.Text != "").ToList();
             foreach (var item in listPosts)
                 Console.WriteLine(item.Text);
+            //TODO: Реализовать класс POST с атрибутами постов (схалтурничаем и реализуем через интерфейс (надеюсь). В классе реализовать функцию возвращения листа с постами
             //Console.WriteLine(get.WallPosts.Where(item => item.Text != "" ).ToString());
             
         }
