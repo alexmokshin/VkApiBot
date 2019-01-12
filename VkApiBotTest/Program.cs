@@ -28,6 +28,7 @@ namespace VkApiBotTest
         static Task<string> vs = null;
         static void Main(string[] args)
         {
+            /*
             
             List<string> postTexts = new List<string>()
             {
@@ -39,7 +40,6 @@ namespace VkApiBotTest
             };
             
             Dictionary<char, double> massSymbPairs = new Dictionary<char, double>();
-            //string test = "Ааааааббббвбвовроаждячсзщлмгтколотцуроиккждлвааааадлоьыващштцрориывадлокдль";
             postTexts.ForEach(item => FullPostText += item);
             foreach (var t in FullPostText)
             {
@@ -57,46 +57,32 @@ namespace VkApiBotTest
                 Console.WriteLine("Символ {0} частность {1}", t.Key, t.Value);
             //TODO: Реализовать класс, который будет обрабатывать статистику из постов, возвращать JSON. Постараться абстрагироваться от листа с текстом. Пусть принимает весь класс POST и его обрабатывает. В частности, выдергивает текст, и считает статистику
             string json = JsonConvert.SerializeObject(massSymbPairs);
-            Console.WriteLine(json);
-            //GetPostsFromVkViaApi();
-            //GetAuth(null, null);
+            Console.WriteLine(json);*/
+            GetPostsFromVkViaApi();
             Console.ReadKey();
             
 
         }
         static void GetPostsFromVkViaApi()
         {
-            WebClient webClient = new WebClient();
-            //string response = webClient.DownloadString()
-            var api = new VkApi();
-            SecureString ssg = new SecureString();
-            //ssg = "Zgd5897jyg%";
-            api.Authorize(new ApiAuthParams
+            var vkAuth = new VkAuthParams();
+            var vkApi = vkAuth.Authorize("+79827160928");
+            if (vkApi.Token != null)
             {
-                ApplicationId = 6810122,
-                Login = "***",
-                Password = "***",
-                Settings = Settings.Wall,
-                TwoFactorAuthorization = () =>
+                var get = vkApi.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
                 {
-                    Console.WriteLine("Enter code:");
-                    return Console.ReadLine();
-                }
-            });
+                    Domain = "id1",
+                    Count = 5
+                });
+                // TODO: Вынести параметры запрашиваемого поста в отдельный класс. Реализовать в классе проверку на ввод домена.
 
-            //Console.WriteLine(api.Token);
-            var get = api.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
-            {
-                Domain = "id1",
-                Count = 5
-            });
-            // TODO: Вынести параметры запрашиваемого поста в отдельный класс. Реализовать в классе проверку на ввод домена.
-
-            List<VkNet.Model.Attachments.Post> listPosts = get.WallPosts.Where(item => item.Text != "").ToList();
-            foreach (var item in listPosts)
-                Console.WriteLine(item.Text);
-            //TODO: Реализовать класс POST с атрибутами постов (схалтурничаем и реализуем через интерфейс (надеюсь). В классе реализовать функцию возвращения листа с постами
-            //Console.WriteLine(get.WallPosts.Where(item => item.Text != "" ).ToString());
+                List<VkNet.Model.Attachments.Post> listPosts = get.WallPosts.Where(item => item.Text != "").ToList();
+                foreach (var item in listPosts)
+                    Console.WriteLine(item.Text);
+                //TODO: Реализовать класс POST с атрибутами постов (схалтурничаем и реализуем через интерфейс (надеюсь). В классе реализовать функцию возвращения листа с постами
+                //Console.WriteLine(get.WallPosts.Where(item => item.Text != "" ).ToString());
+            }
+            
             
         }
         static void GetAuth(string username, string password)

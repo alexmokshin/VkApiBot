@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Security;
 using VkNet;
 using VkNet.Abstractions.Authorization;
@@ -25,7 +26,7 @@ namespace VkApiBotTest
         public string ProxyPassword { get; set; }
         public string Phone { get; set; }
 
-        public static SecureString vkPassword()
+        private SecureString vkPassword()
         {
             SecureString secPasswd = new SecureString();
             ConsoleKeyInfo keyInfo;
@@ -33,10 +34,16 @@ namespace VkApiBotTest
             do
             {
                 keyInfo = Console.ReadKey(true);
-                if (((int)keyInfo.Key) >= 65 && ((int)keyInfo.Key <= 90))
+                if (((int)keyInfo.Key) >= 10 && ((int)keyInfo.Key <= 300))
                 {
                     secPasswd.AppendChar(keyInfo.KeyChar);
                     Console.Write("*");
+                }
+                else if(keyInfo.Key == ConsoleKey.Backspace)
+                {
+                    Console.Write("\b");
+                    secPasswd.RemoveAt(secPasswd.Length - 1);
+                    
                 }
                
             }
@@ -45,7 +52,54 @@ namespace VkApiBotTest
             return secPasswd;
             
         }
-
-        
+        private String SecureStringToString(SecureString value)
+        {
+            IntPtr valuePtr = IntPtr.Zero;
+            try
+            {
+                valuePtr = Marshal.SecureStringToGlobalAllocUnicode(value);
+                return Marshal.PtrToStringUni(valuePtr);
+            }
+            finally
+            {
+                Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
+            }
+        }
+        public VkAuthParams GetApiAuthParams(string username)
+        {
+            var authParams = new VkAuthParams();
+            if (username != null)
+            {
+                authParams.Login = username;
+                authParams.Password = SecureStringToString(vkPassword());
+                authParams.Settings = Settings.Wall;
+                authParams.TwoFactorAuthorization = () =>
+                {
+                    Console.WriteLine("Enter code, if you enable double-auth security. If you dont'use it - press Enter");
+                    return Console.ReadLine();
+                };
+                return authParams;
+            }
+            else
+                throw new ArgumentNullException(username, "Enter login to authentication");
+            
+        }
+        public VkApi Authorize(string username)
+        {
+            var api = new VkApi();
+            try
+            {
+                api.Authorize(GetApiAuthParams(username));
+            }
+            catch (VkNet.Exception.VkApiException)
+            {
+                Console.WriteLine("Пароль введен неправильно. Пожалуйста, попробуйте еще раз");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return api;
+        }
     }
 }
