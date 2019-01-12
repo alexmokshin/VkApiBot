@@ -33,6 +33,7 @@ namespace VkApiBotTest
                 {
                 throw new ArgumentNullException(username, "Введите имя пользователя, чьи посты необходимо проверить");
                 }
+            return null;
         }
 
         public void SetWallPostToUsername(VkApi _api, string message, string postOwner, long toUsername = 0)
