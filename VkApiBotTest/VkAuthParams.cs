@@ -73,14 +73,14 @@ namespace VkApiBotTest
         private VkAuthParams GetApiAuthParams(string username)
         {
             var authParams = new VkAuthParams();
-            if (username != null)
+            if (!String.IsNullOrEmpty(username))
             {
                 authParams.Login = username;
                 authParams.Password = SecureStringToString(VkPassword());
                 authParams.Settings = Settings.Wall;
                 authParams.TwoFactorAuthorization = () =>
                 {
-                    Console.WriteLine("Enter code, if you enable double-auth security. If you dont'use it - press Enter");
+                    Console.WriteLine("Enter code, if you enable double-auth security. If you dont'use it-press Enter");
                     return Console.ReadLine();
                 };
                 return authParams;

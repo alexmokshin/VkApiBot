@@ -9,22 +9,25 @@ namespace VkApiBotTest
     class PostAdministration : IPostAdministrate<Post>
     {
         public long PostOwner {get;set;}
+        //функция, в которую мы будем возращать посты пользователя. Условия - чтобы посты были, и чтобы в постах был текст
         public List<Post> GetPostsFromUsername(VkApi _api, string username, int count=5)
         {
             if (username!=null)
             {
+                username = NormalizeUsernameString(username);
                 try
                 {
-                    var get = _api.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
+                    var getPosts = _api.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
                     {
                         Domain = username,
                         Count = (ulong)count
                     });
-                    List<Post> posts = get.WallPosts.Where(item => item.Text != "").ToList();
-                    if (posts.Count == 0)
+                    List<Post> userPosts = getPosts.WallPosts.Where(item => !String.IsNullOrEmpty(item.Text)).ToList();
+                    if (userPosts.Count == 0)
                         throw new Exception("У пользователя нет постов с текстом, для представления");
-                    PostOwner = get.WallPosts[0].OwnerId.Value;
-                    return posts;
+                    //Здесь будем айди владельца поста. По хорошему - иметь бы профиль пользователя, но пока времени нет.
+                    PostOwner = getPosts.WallPosts[0].OwnerId.Value;
+                    return userPosts;
                 }
                 catch (Exception ex)
                 {
@@ -62,6 +65,22 @@ namespace VkApiBotTest
             else
                 Console.WriteLine("Пост не размешен");
             
+        }
+
+        string NormalizeUsernameString(string username)
+        {
+            string temp;
+            if (username.StartsWith("public"))
+            {
+                temp = username.Replace("public", "-");
+                return temp;
+            }
+            else if (username.StartsWith("-"))
+            {
+                temp = username.Replace("-", "public");
+                return temp;
+            }
+            return username;
         }
     }
 }
