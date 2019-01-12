@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using System.Security;
 using VkNet;
-using VkNet.Abstractions.Authorization;
 using VkNet.Enums.Filters;
 using VkNet.Model;
 
@@ -10,6 +9,7 @@ namespace VkApiBotTest
 {
     class VkAuthParams : IApiAuthParams
     {
+        #region Properties
         public ulong ApplicationId { get; set; } = 6810122;
         public string Login { get; set; }
         public string Password { get; set; }
@@ -25,8 +25,9 @@ namespace VkApiBotTest
         public string ProxyLogin { get; set; }
         public string ProxyPassword { get; set; }
         public string Phone { get; set; }
+        #endregion
 
-        private SecureString vkPassword()
+        private SecureString VkPassword()
         {
             SecureString secPasswd = new SecureString();
             ConsoleKeyInfo keyInfo;
@@ -71,7 +72,7 @@ namespace VkApiBotTest
             if (username != null)
             {
                 authParams.Login = username;
-                authParams.Password = SecureStringToString(vkPassword());
+                authParams.Password = SecureStringToString(VkPassword());
                 authParams.Settings = Settings.Wall;
                 authParams.TwoFactorAuthorization = () =>
                 {

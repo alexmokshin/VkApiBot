@@ -9,10 +9,5 @@ using VkNet;
 
 namespace VkApiBotTest
 {
-    class VkPosts
-    {
-        private static VkApi vkApi { get; set; }
-
-        
-    }
+    
 }

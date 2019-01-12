@@ -74,6 +74,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IPostAdministrate.cs" />
+    <Compile Include="PostAdministration.cs" />
     <Compile Include="VkAuthParams.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

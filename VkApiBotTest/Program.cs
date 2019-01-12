@@ -23,74 +23,53 @@ namespace VkApiBotTest
     
     class Program
     {
-        static String FullPostText = null;
+        
         static HttpClient client = new HttpClient();
-        static Task<string> vs = null;
         static void Main(string[] args)
         {
-            /*
-            
-            List<string> postTexts = new List<string>()
-            {
-                "Мама мыла раму",
-                "Мама мыла пол",
-                "Папа страдал хуйней",
-                "Брат курил гашиш",
-                "А я кодил"
-            };
-            
-            Dictionary<char, double> massSymbPairs = new Dictionary<char, double>();
-            postTexts.ForEach(item => FullPostText += item);
-            foreach (var t in FullPostText)
-            {
-                if (Char.IsLetter(t))
-                {
-                    if (!massSymbPairs.ContainsKey(t))
-                    {
-                        double cntSimb = FullPostText.Count(item => (char)item == t);
-                        double freq = Math.Round(cntSimb / FullPostText.Length, 3);
-                        massSymbPairs.Add(t, freq);
-                    }
-                }
-            }
-            foreach (var t in massSymbPairs)
-                Console.WriteLine("Символ {0} частность {1}", t.Key, t.Value);
-            //TODO: Реализовать класс, который будет обрабатывать статистику из постов, возвращать JSON. Постараться абстрагироваться от листа с текстом. Пусть принимает весь класс POST и его обрабатывает. В частности, выдергивает текст, и считает статистику
-            string json = JsonConvert.SerializeObject(massSymbPairs);
-            Console.WriteLine(json);*/
             GetPostsFromVkViaApi();
             Console.ReadKey();
-            
-
         }
         static void GetPostsFromVkViaApi()
         {
+            String FullPostText = null;
+            PostAdministration administration = new PostAdministration();
             var vkAuth = new VkAuthParams();
-            var vkApi = vkAuth.Authorize("+79827160928");
-            if (vkApi.Token != null)
+            Console.WriteLine("Enter login: ");
+            string login = Console.ReadLine();
+            var vkApi = vkAuth.Authorize(login);
+            if (vkApi.IsAuthorized)
             {
-                var get = vkApi.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
-                {
-                    Domain = "id1",
-                    Count = 5
-                });
+                Console.WriteLine("Enter id or username, which posts need to calcualte");
+                string postOwner = Console.ReadLine();
+                List<VkNet.Model.Attachments.Post> posts = administration.GetPostsFromUsername(vkApi, postOwner);
                 // TODO: Вынести параметры запрашиваемого поста в отдельный класс. Реализовать в классе проверку на ввод домена.
-
-                List<VkNet.Model.Attachments.Post> listPosts = get.WallPosts.Where(item => item.Text != "").ToList();
-                foreach (var item in listPosts)
-                    Console.WriteLine(item.Text);
-                //TODO: Реализовать класс POST с атрибутами постов (схалтурничаем и реализуем через интерфейс (надеюсь). В классе реализовать функцию возвращения листа с постами
-                //Console.WriteLine(get.WallPosts.Where(item => item.Text != "" ).ToString());
+                Dictionary<char, double> massSymbPairs = new Dictionary<char, double>();
+                
+                    
+                posts.ForEach(item => FullPostText += item.Text.ToUpper());
+                foreach (var t in FullPostText.ToUpper())
+                {
+                    if (Char.IsLetter(t))
+                    {
+                        if (!massSymbPairs.ContainsKey(t))
+                        {
+                            double cntSimb = FullPostText.Count(item => (char)item == t);
+                            double freq = Math.Round(cntSimb / FullPostText.Length, 3);
+                            massSymbPairs.Add(t, freq);
+                        }
+                    }
+                }
+                foreach (var t in massSymbPairs)
+                    Console.WriteLine("Символ {0} частность {1}", t.Key, t.Value);
+                //TODO: Реализовать класс, который будет обрабатывать статистику из постов, возвращать JSON. Постараться абстрагироваться от листа с текстом. Пусть принимает весь класс POST и его обрабатывает. В частности, выдергивает текст, и считает статистику
+                string json = JsonConvert.SerializeObject(massSymbPairs);
+                administration.SetWallPostToUsername(vkApi, json,posts[0].OwnerId.ToString());
+               
+               
             }
             
             
-        }
-        static void GetAuth(string username, string password)
-        {
-            WebClient webClient = new WebClient();
-            var t = webClient.DownloadString("http://api.vkontakte.ru/oauth/authorize?client_id=6810122&scope=offline,wall");
-           
-
         }
         static async Task<string> GetPostFromVk(ApiVkBotSettings apiVk)
         {
@@ -101,13 +80,6 @@ namespace VkApiBotTest
                 source = await response.Content.ReadAsStringAsync();
             return source ;
         }
-        static async Task<string> PostMessageToVk(ApiVkBotSettings apiVk)
-        {
-            HttpResponseMessage response = await client.GetAsync("https://api.vk.com/method/wall.post?owner_id=-84599507&message=Тест&v=5.92&access_token=" + apiVk.secret_service_uuid);
-            string source = null;
-            if (response.IsSuccessStatusCode)
-                source = await response.Content.ReadAsStringAsync();
-            return source;
-        }
+
     }
 }
