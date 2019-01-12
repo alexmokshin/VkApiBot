@@ -27,6 +27,8 @@ namespace VkApiBotTest
         public string Phone { get; set; }
         #endregion
 
+        //Чтобы увеличить уровень безопасности личных данных в приложении, будем принимать строку с паролем в качестве защищенной
+        //и возвращать ее
         private SecureString VkPassword()
         {
             SecureString secPasswd = new SecureString();
@@ -53,6 +55,7 @@ namespace VkApiBotTest
             return secPasswd;
             
         }
+        //Поскольку, API не умеет работать с защищенными строками, придется конвертировать ее назад в string
         private String SecureStringToString(SecureString value)
         {
             IntPtr valuePtr = IntPtr.Zero;
@@ -66,7 +69,8 @@ namespace VkApiBotTest
                 Marshal.ZeroFreeGlobalAllocUnicode(valuePtr);
             }
         }
-        public VkAuthParams GetApiAuthParams(string username)
+        //Создадим функцию, которая будет возвращать поля, необходимые для аутентификации
+        private VkAuthParams GetApiAuthParams(string username)
         {
             var authParams = new VkAuthParams();
             if (username != null)
@@ -85,6 +89,8 @@ namespace VkApiBotTest
                 throw new ArgumentNullException(username, "Enter login to authentication");
             
         }
+        //Перепишем метод авторизации, поскольку дефлотный не учитывает двух-факторную аутентификацию, да и паролем будет пользоваться безопаснее.
+        //согласно тестам, прочитать его нельзя.
         public VkApi Authorize(string username)
         {
             var api = new VkApi();
