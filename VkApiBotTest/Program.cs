@@ -32,7 +32,7 @@ namespace VkApiBotTest
                             break;
                         List<VkNet.Model.Attachments.Post> posts = administration.GetPostsFromUsername(vkApi, postOwner);
                         string json = PostTextConversation.JsonPostConversation(posts);
-                        //administration.SetWallPostToUsername(vkApi, json);
+                        administration.SetWallPostToUsername(vkApi, json);
                     }
                     catch (Exception ex)
                     {

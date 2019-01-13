@@ -100,7 +100,7 @@ namespace VkApiBotTest
             }
             catch (VkNet.Exception.VkApiException)
             {
-                Console.WriteLine("Пароль введен неправильно. Пожалуйста, попробуйте еще раз");
+                Console.WriteLine("Логин или пароль введен неправильно. Пожалуйста, попробуйте еще раз");
             }
             catch (Exception ex)
             {
