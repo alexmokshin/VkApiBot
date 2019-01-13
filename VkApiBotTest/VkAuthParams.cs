@@ -50,7 +50,7 @@ namespace VkApiBotTest
                
             }
             while (keyInfo.Key != ConsoleKey.Enter);
-            
+            Console.WriteLine();
             return secPasswd;
             
         }
