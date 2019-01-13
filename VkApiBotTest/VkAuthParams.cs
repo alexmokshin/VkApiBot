@@ -10,7 +10,7 @@ namespace VkApiBotTest
     class VkAuthParams : IApiAuthParams
     {
         #region Properties
-        public ulong ApplicationId { get; set; } = 6810122;
+        public ulong ApplicationId { get; set; } 
         public string Login { get; set; }
         public string Password { get; set; }
         public Settings Settings { get; set; } = Settings.Wall;
@@ -37,7 +37,7 @@ namespace VkApiBotTest
             do
             {
                 keyInfo = Console.ReadKey(true);
-                if (((int)keyInfo.Key) >= 10 && ((int)keyInfo.Key <= 300))
+                if (IS_VALID_KEY_RANGE((int)keyInfo.Key))
                 {
                     secPasswd.AppendChar(keyInfo.KeyChar);
                     Console.Write("*");
@@ -46,15 +46,16 @@ namespace VkApiBotTest
                 {
                     Console.Write("\b");
                     secPasswd.RemoveAt(secPasswd.Length - 1);
-                    
                 }
                
             }
             while (keyInfo.Key != ConsoleKey.Enter);
-            Console.WriteLine();
+            
             return secPasswd;
             
         }
+
+        public static Predicate<int> IS_VALID_KEY_RANGE = delegate (int t) { return (t >= 10 && t <= 300 && t!=13); };
         //Поскольку, API не умеет работать с защищенными строками, придется конвертировать ее назад в string
         private String SecureStringToString(SecureString value)
         {
@@ -72,18 +73,21 @@ namespace VkApiBotTest
         //Создадим функцию, которая будет возвращать поля, необходимые для аутентификации
         private VkAuthParams GetApiAuthParams(string username)
         {
-            var authParams = new VkAuthParams();
-            if (!String.IsNullOrEmpty(username))
+            const ulong APPLICATION_ID = 6810122;
+            var auth_params = new VkAuthParams();
+            if (!String.IsNullOrWhiteSpace(username))
             {
-                authParams.Login = username;
-                authParams.Password = SecureStringToString(VkPassword());
-                authParams.Settings = Settings.Wall;
-                authParams.TwoFactorAuthorization = () =>
+                auth_params.ApplicationId = APPLICATION_ID;
+                auth_params.Login = username;
+                auth_params.Password = SecureStringToString(VkPassword());
+                auth_params.Settings = Settings.Wall;
+                auth_params.TwoFactorAuthorization = () =>
                 {
                     Console.WriteLine("Enter code, if you enable double-auth security. If you dont'use it-press Enter");
                     return Console.ReadLine();
                 };
-                return authParams;
+
+                return auth_params;
             }
             else
                 throw new ArgumentNullException(username, "Enter login to authentication");
@@ -93,10 +97,10 @@ namespace VkApiBotTest
         //согласно тестам, прочитать его нельзя.
         public VkApi Authorize(string username)
         {
-            var api = new VkApi();
+            var API = new VkApi();
             try
             {
-                api.Authorize(GetApiAuthParams(username));
+                API.Authorize(GetApiAuthParams(username));
             }
             catch (VkNet.Exception.VkApiException)
             {
@@ -106,7 +110,7 @@ namespace VkApiBotTest
             {
                 Console.WriteLine(ex.Message);
             }
-            return api;
+            return API;
         }
     }
 }

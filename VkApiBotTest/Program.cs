@@ -28,11 +28,15 @@ namespace VkApiBotTest
                     {
                         Console.WriteLine("Enter id or username, which posts need to calcualte");
                         string postOwner = Console.ReadLine();
-                        if (postOwner == null || postOwner == "")
+                        if (String.IsNullOrWhiteSpace(postOwner))
                             break;
                         List<VkNet.Model.Attachments.Post> posts = administration.GetPostsFromUsername(vkApi, postOwner);
-                        string json = PostTextConversation.JsonPostConversation(posts);
-                        administration.SetWallPostToUsername(vkApi, json);
+                        if (posts != null)
+                        {
+                            string userActivityStatisctics = UserPostActivityConvertor.ConvertListToJson(posts);
+                            administration.SetWallPostActivityToUsername(vkApi, userActivityStatisctics);
+                        }
+                        
                     }
                     catch (Exception ex)
                     {

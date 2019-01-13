@@ -7,6 +7,6 @@ namespace VkApiBotTest
     {
         long PostOwner { get; set; }
         List<T> GetPostsFromUsername(VkApi _api, string username, int count);
-        void SetWallPostToUsername(VkApi _api, string message,long toUsername = 0);
+        void SetWallPostActivityToUsername(VkApi _api, string message,long toUsername = 0);
     }
 }

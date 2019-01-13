@@ -76,7 +76,7 @@
   <ItemGroup>
     <Compile Include="IPostAdministrate.cs" />
     <Compile Include="PostAdministration.cs" />
-    <Compile Include="PostTextConversation.cs" />
+    <Compile Include="UserPostActivivtyConvertor.cs" />
     <Compile Include="VkAuthParams.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -84,6 +84,9 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Images\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

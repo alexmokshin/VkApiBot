@@ -8,62 +8,66 @@ namespace VkApiBotTest
 {
     class PostAdministration : IPostAdministrate<Post>
     {
-        public string Domain { get; set; }
-        public long OwnerId { get; set; }
+        public string UserDomain { get; set; }
+        public long UserOwnerId { get; set; }
         public long PostOwner {get;set;}
         //функция, в которую мы будем возращать посты пользователя. Условия - чтобы посты были, и чтобы в постах был текст
-        public List<Post> GetPostsFromUsername(VkApi _api, string username, int count=5)
+        public List<Post> GetPostsFromUsername(VkApi _api, string inputUsername, int count=5)
         {
-            if (username!=null)
+
+            try
             {
+
                 //поскольку API некорректно воспринимает полное id паблика, из которого надо брать посты, будем приводить введенное пользователем имя
                 //в корректный вид
-                username = NormalizeUsernameString(username);
-                Domain = username;
-                try
+                UserDomain = NormalizeUsernameString(inputUsername);
+
+                var getPosts = _api.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
+                {   //у API множество вариаций запроса, для выполнения задачи достаточно использовать Domain или OwnerId
+                    //у поля OwnerId приоритет выше, но для упрощенных ID пользователя, будем использовать Domain
+                    Domain = UserDomain,
+                    OwnerId = UserOwnerId,
+                    Count = (ulong)count
+                });
+
+                //Соберем посты в коллекцию, и отфильтруем по тексту. Для анализа, не нужны посты без текста.
+                List<Post> user_posts = getPosts.WallPosts.Where(item => !String.IsNullOrEmpty(item.Text)).ToList();
+                if (user_posts.Count != 0)
                 {
-                    var getPosts = _api.Wall.Get(new VkNet.Model.RequestParams.WallGetParams
-                    {   //у API множество вариаций запроса, для выполнения задачи достаточно использовать Domain или OwnerId
-                        //у поля OwnerId приоритет выше, но для упрощенных ID пользователя, будем использовать Domain
-                        Domain = Domain,
-                        OwnerId = OwnerId,
-                        Count = (ulong)count
-                    });
-                    //Соберем посты в коллекцию, и отфильтруем по тексту. Для анализа, не нужны посты без текста.
-                    List<Post> userPosts = getPosts.WallPosts.Where(item => !String.IsNullOrEmpty(item.Text)).ToList();
-                    if (userPosts.Count == 0)
-                        throw new Exception("У пользователя нет постов с текстом, для представления");
-                    //Здесь будем айди владельца поста. По хорошему - иметь бы профиль пользователя, но пока времени нет.
                     PostOwner = getPosts.WallPosts[0].OwnerId.Value;
-                    return userPosts;
+                    return user_posts;
+                    
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
+                //Здесь будем айди владельца поста. По хорошему - иметь бы профиль пользователя, но пока времени нет.
+                else
+                    throw new Exception("У пользователя нет постов с текстом, для представления");
             }
-            else
-                {
-                throw new ArgumentNullException(username, "Введите имя пользователя, чьи посты необходимо проверить");
-                }
-            return null;
+
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return null;
+            }
+
         }
+        
 
         //Метод для создания поста на стене авторизованного пользователя
-        public void SetWallPostToUsername(VkApi _api, string message,  long toUsername = 0)
+        //параметр toUsername по умолчанию ноль, поскольку отвечает за то, на чьей стене будет размещен пост.
+        public void SetWallPostActivityToUsername(VkApi _api, string message, long toUsername = 0)
         {
             //в лонге будем хранить id поста
-            long newPostId;
+            long newPostId = 0;
             //Приведем id пользователя в красивый вид, чтобы JS в Вконтакте отмечал пользователя ссылкой
             string usernameId = NormalizeUsernameString(PostOwner.ToString());
             //Приведем текст поста к определенному формату
-            string postMessage = String.Format("@{0}, статистика для последних 5 постов: {1}", usernameId, message);
+            string post_message = String.Format("@{0}, статистика для последних 5 постов: {1}", usernameId, message);
             if (toUsername == 0)
             {
                 //если мы не отметили, на чьей стене будем размещать пост, по умолчанию размещаем на стене авторизованного пользователя
                 newPostId = _api.Wall.Post(new VkNet.Model.RequestParams.WallPostParams
                 {
-                    Message = postMessage
+                    Message = post_message
                 });
             }
             else
@@ -72,7 +76,7 @@ namespace VkApiBotTest
                 newPostId = _api.Wall.Post(new VkNet.Model.RequestParams.WallPostParams
                 {
                     OwnerId = toUsername,
-                    Message = postMessage
+                    Message = post_message
                 });
             }
             //Рапортуем, что пост размещен корректно
@@ -90,20 +94,21 @@ namespace VkApiBotTest
             if (username.StartsWith("public"))
             {
                 temp = username.Replace("public", "-");
-                OwnerId = Convert.ToInt64(temp);
-                return temp;
+                UserOwnerId = Convert.ToInt64(temp);
             }
             else if (username.StartsWith("-"))
             {
                 temp = username.Replace("-", "public");
-                return temp;
             }
             else if (Char.IsDigit(username,0))
             {
                 temp = "id" + username;
-                return temp;
             }
-            return username;
+            else
+            {
+                temp = username;
+            }
+            return temp;
         }
     }
 }
